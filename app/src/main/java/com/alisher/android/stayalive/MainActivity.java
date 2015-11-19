@@ -88,10 +88,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                                 break;
                             case 3:
                                 Toast.makeText(MainActivity.this, "Registration", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(MainActivity.this, RegisterActivity.class));
                             case 4:
                                 Toast.makeText(MainActivity.this, "Login", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(MainActivity.this, LoginActivity.class));
                                 break;
                         }
                         return true;

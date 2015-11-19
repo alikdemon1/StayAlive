@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
@@ -20,6 +19,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText name;
     private EditText email;
     private EditText password;
+    private EditText group;
     private Button signUpBtn;
     private ProgressDialog progressDialog;
 
@@ -55,6 +55,7 @@ public class RegisterActivity extends AppCompatActivity {
                 user.setUsername(name.getText().toString());
                 user.setEmail(email.getText().toString());
                 user.setPassword(password.getText().toString());
+                user.put("group", group.getText().toString());
 
                 user.signUpInBackground(new SignUpCallback() {
                     @Override
@@ -83,6 +84,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void initComponents(){
         name = (EditText) findViewById(R.id.name_register);
         email = (EditText) findViewById(R.id.email_register);
+        group = (EditText) findViewById(R.id.group_register);
         password = (EditText) findViewById(R.id.password_register);
         signUpBtn = (Button) findViewById(R.id.register_button);
     }
