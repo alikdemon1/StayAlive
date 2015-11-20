@@ -1,9 +1,12 @@
 package com.alisher.android.stayalive;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -38,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     private Toolbar toolbar;
     private Drawer result;
     private AccountHeader accountHeader;
+    private Bitmap photo;
+    private ProfileDrawerItem profile = new ProfileDrawerItem();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         setContentView(R.layout.activity_main);
         initToolbar();
         initFloat();
+        initCamera();
         initSurface();
         createAccountHeader();
         initializeNavigationDrawer();
@@ -59,49 +66,60 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 .withActionBarDrawerToggleAnimated(true)
                 .addDrawerItems(
                         new PrimaryDrawerItem()
-                                .withName("Home")
+                                .withName("Target")
                                 .withIdentifier(1)
-                                .withIcon(FontAwesome.Icon.faw_home),
+                                .withIcon(FontAwesome.Icon.faw_crosshairs),
                         new DividerDrawerItem(),
                         new SecondaryDrawerItem()
-                                .withName("Contacts")
+                                .withName("My Hunter")
                                 .withIdentifier(2)
-                                .withIcon(FontAwesome.Icon.faw_calendar),
+                                .withIcon(FontAwesome.Icon.faw_user_secret),
                         new SecondaryDrawerItem()
-                                .withName("Registration")
+                                .withName("News")
                                 .withIdentifier(3)
-                                .withIcon(FontAwesome.Icon.faw_user_plus),
+                                .withIcon(FontAwesome.Icon.faw_bullhorn),
                         new SecondaryDrawerItem()
-                                .withName("Login")
+                                .withName("Configuration")
                                 .withIdentifier(4)
-                                .withIcon(FontAwesome.Icon.faw_user))
+                                .withIcon(FontAwesome.Icon.faw_cog),
+                        new SecondaryDrawerItem()
+                                .withName("I was killed")
+                                .withIdentifier(5)
+                                .withIcon(FontAwesome.Icon.faw_frown_o))
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
                         switch (drawerItem.getIdentifier()) {
                             case 1:
-                                Toast.makeText(MainActivity.this, "Home", Toast.LENGTH_SHORT).show();
+                                Intent intent= new Intent(MainActivity.this,TargetActivity.class);
+                                startActivity(intent);
+                                Toast.makeText(MainActivity.this, "Target", Toast.LENGTH_SHORT).show();
                                 break;
                             case 2:
-                                Toast.makeText(MainActivity.this, "Contacts", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "My Hunter", Toast.LENGTH_SHORT).show();
                                 break;
                             case 3:
-                                Toast.makeText(MainActivity.this, "Registration", Toast.LENGTH_SHORT).show();
-                            case 4:
-                                Toast.makeText(MainActivity.this, "Login", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "News", Toast.LENGTH_SHORT).show();
                                 break;
+                            case 4:
+                                Toast.makeText(MainActivity.this, "Configuration", Toast.LENGTH_SHORT).show();
+                                break;
+                            case 5:
+                                Toast.makeText(MainActivity.this, "I was killed", Toast.LENGTH_SHORT).show();
                         }
                         return true;
                     }
                 })
                 .build();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        result.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
     }
 
     private AccountHeader createAccountHeader() {
-        IProfile profile = new ProfileDrawerItem()
+        profile = new ProfileDrawerItem()
                 .withName("Alisher")
                 .withEmail("alikdemon@gmail.com")
-                .withIcon(FontAwesome.Icon.faw_user);
+                .withIcon(photo);
 
         accountHeader = new AccountHeaderBuilder()
                 .withActivity(this)
@@ -140,19 +158,22 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     private void initToolbar(){
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setBackgroundColor(getResources().getColor(R.color.colorToolbar));
     }
 
     private void initFloat(){
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 switch (i) {
                     case 0:
+                        fab.setImageResource(android.R.drawable.ic_lock_silent_mode_off);
                         mPlayer.setVolume(0, 1);
                         i = 1;
                         break;
                     case 1:
+                        fab.setImageResource(android.R.drawable.ic_lock_silent_mode);
                         mPlayer.setVolume(0, 0);
                         i = 0;
                         break;
@@ -161,7 +182,25 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         });
     }
 
+    private void initCamera(){
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.camera);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(camera,188);
+            }
+        });
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode==188 && resultCode==RESULT_OK){
+            photo = (Bitmap)data.getExtras().get("data");
+            profile.withIcon(photo);
+            accountHeader.addProfiles(profile);
+        }
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
