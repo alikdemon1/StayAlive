@@ -40,7 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void initProgressWhileRegistering(){
         progressDialog = new ProgressDialog(RegisterActivity.this);
-        progressDialog.setTitle("Proccessing...");
+        progressDialog.setTitle("Processing...");
         progressDialog.setMessage("Please wait...");
         progressDialog.setCancelable(false);
         progressDialog.setIndeterminate(true);

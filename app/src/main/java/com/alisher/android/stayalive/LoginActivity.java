@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void initProgressWhileLogging(){
         progressDialog = new ProgressDialog(LoginActivity.this);
-        progressDialog.setTitle("Proccessing...");
+        progressDialog.setTitle("Processing...");
         progressDialog.setMessage("Please wait...");
         progressDialog.setCancelable(false);
         progressDialog.setIndeterminate(true);
@@ -97,5 +97,4 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-
 }
