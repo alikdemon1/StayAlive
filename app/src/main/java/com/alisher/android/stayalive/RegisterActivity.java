@@ -19,6 +19,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText name;
     private EditText email;
     private EditText password;
+    private EditText gender;
     private EditText group;
     private Button signUpBtn;
     private ProgressDialog progressDialog;
@@ -56,6 +57,8 @@ public class RegisterActivity extends AppCompatActivity {
                 user.setEmail(email.getText().toString());
                 user.setPassword(password.getText().toString());
                 user.put("group", group.getText().toString());
+                user.put("gender", gender.getText().toString());
+                user.put("icon", R.drawable.user_icon);
 
                 user.signUpInBackground(new SignUpCallback() {
                     @Override
@@ -86,6 +89,7 @@ public class RegisterActivity extends AppCompatActivity {
         email = (EditText) findViewById(R.id.email_register);
         group = (EditText) findViewById(R.id.group_register);
         password = (EditText) findViewById(R.id.password_register);
+        gender = (EditText) findViewById(R.id.gender_register);
         signUpBtn = (Button) findViewById(R.id.register_button);
     }
 }

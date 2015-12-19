@@ -18,16 +18,15 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Name:"
         android:id="@+id/justText"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/textName"
-        android:layout_toStartOf="@+id/textName"
-        android:layout_marginTop="20dp"/>
+        android:layout_alignLeft="@+id/imageTarget"
+        android:layout_alignStart="@+id/imageTarget"
+        android:layout_below="@+id/imageTarget"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Department:"
+        android:text="Group:"
         android:id="@+id/justText2"
         android:layout_below="@+id/justText3"
         android:layout_alignRight="@+id/justText"/>
@@ -45,19 +44,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="empty"
+        android:text="Downloading..."
         android:id="@+id/textName"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="108dp"
-        android:layout_marginTop="20dp"/>
+        android:layout_toRightOf="@+id/justText2"
+        android:layout_toEndOf="@+id/justText2"
+        android:layout_below="@+id/imageTarget"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="empty"
+        android:text="Downloading..."
         android:id="@+id/textGender"
         android:layout_below="@+id/textName"
         android:layout_alignLeft="@+id/textName"
@@ -67,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="empty"
+        android:text="Downloading..."
         android:id="@+id/textGroup"
         android:layout_below="@+id/textGender"
         android:layout_alignLeft="@+id/textGender"
@@ -77,10 +74,26 @@
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:id="@+id/imageTarget"
-        android:layout_below="@+id/justText2"
-        android:layout_marginTop="30dp"
         android:layout_centerHorizontal="true"
         android:clickable="true"
         android:onClick="imageTargetShow"
-        android:src="@android:drawable/sym_def_app_icon"/>
+        android:src="@drawable/user_icon"/>
+
+    <EditText
+        android:layout_width="200dp"
+        android:hint="Code from Target's app"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextTarget"
+        android:layout_below="@+id/textGroup"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Killed"
+        android:id="@+id/buttonKilled"
+        android:onClick="buttonKilledClicked"
+        android:layout_below="@+id/editTextTarget"
+        android:layout_alignRight="@+id/editTextTarget"
+        android:layout_alignEnd="@+id/editTextTarget" />
 </RelativeLayout>
