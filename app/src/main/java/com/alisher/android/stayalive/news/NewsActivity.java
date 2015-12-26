@@ -72,22 +72,13 @@ public class NewsActivity extends AppCompatActivity {
                         newsItem.setName(o.getString("name"));
                         newsItem.setDes(o.getString("desc"));
                         ParseFile image = (ParseFile) o.get("logo");
-                        image.getDataInBackground(new GetDataCallback() {
-                            @Override
-                            public void done(byte[] bytes, ParseException e) {
-                                if (e == null) {
-                                    bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                                    Log.d("BMP", bmp.toString());
-                                    newsItem.setmThumbnail(bmp);
-                                    Log.e("parse file ok", " null");
-                                } else {
-                                    Log.e("parse after download", " null");
-                                }
-                            }
-                        });
+                        try {
+                            bmp = BitmapFactory.decodeByteArray(image.getData(),0,image.getData().length);
+                            newsItem.setmThumbnail(bmp);
+                        } catch (ParseException e1) {
+                            e1.printStackTrace();
+                        }
                         news.add(newsItem);
-                        Log.d("IMAGE BLYAD0", news.get(0).getmThumbnail() + "");
-                        Log.d("IMAGE BLYAD1", news.get(1).getmThumbnail() + "");
                     }
                     ((NewsAdapter)mAdapter).setNews(news);
                 } else {

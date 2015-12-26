@@ -31,7 +31,6 @@ public class HunterActivity extends AppCompatActivity {
     private String hunterGender;
     private ImageView imageIV;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +42,7 @@ public class HunterActivity extends AppCompatActivity {
         initContent();
         getHunter();
     }
+
     private void initContent() {
         groupTV = (TextView) findViewById(R.id.textGroupHunter);
         genderTV = (TextView) findViewById(R.id.textGenderHunter);
@@ -77,6 +77,7 @@ public class HunterActivity extends AppCompatActivity {
             }
         });
     }
+
     public void imageHunterShow(View view) {
         Toast.makeText(this, "Nothing to show", Toast.LENGTH_SHORT).show();
     }

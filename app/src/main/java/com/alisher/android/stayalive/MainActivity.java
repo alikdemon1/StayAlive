@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         initializeNavigationDrawer();
         initIcon();
         setAnimationNews();
-//        initTimer();
     }
 
     private void setAnimationNews() {
@@ -184,19 +182,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         result.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
     }
-
-//    private void initTimer() {
-//        timerView = (TextView) findViewById(R.id.timer);
-//        new CountDownTimer(10000, 1000) {
-//            public void onTick(long millisUntilFinished) {
-//                timerView.setText("seconds remaining: " + millisUntilFinished / 1000);
-//            }
-//            public void onFinish() {
-//
-//                timerView.setText("done!");
-//            }
-//        }.start();
-//    }
 
     private AccountHeader createAccountHeader() {
         if (user != null) {

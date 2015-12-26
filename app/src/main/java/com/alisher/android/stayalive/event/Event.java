@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
  */
 public class Event {
      String name;
-     String age;
+     String descr;
      Bitmap photoId;
      String start;
      String end;
@@ -31,12 +31,12 @@ public class Event {
         this.name = name;
     }
 
-    public String getAge() {
-        return age;
+    public String getDescr() {
+        return descr;
     }
 
-    public void setAge(String age) {
-        this.age = age;
+    public void setDescr(String descr) {
+        this.descr = descr;
     }
 
     public String getStart() {

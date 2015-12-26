@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.alisher.android.stayalive.MainActivity;
 import com.alisher.android.stayalive.R;
+import com.alisher.android.stayalive.news.NewsAdapter;
 import com.parse.FindCallback;
 import com.parse.GetDataCallback;
 import com.parse.ParseException;
@@ -30,6 +31,7 @@ public class EventActivity extends AppCompatActivity {
     private List<Event> events;
     private Bitmap bmp;
     private RecyclerView rv;
+    private RecyclerView.Adapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +42,11 @@ public class EventActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         rv = (RecyclerView) findViewById(R.id.rv);
-
         LinearLayoutManager llm = new LinearLayoutManager(this);
+        mAdapter = new EventAdapter(getApplicationContext());
+        initializeData();
+        rv.setAdapter(mAdapter);
         rv.setLayoutManager(llm);
-        rv.setHasFixedSize(true);
         rv.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), new RecyclerItemClickListener.OnItemClickListener() {
 
             @Override
@@ -52,15 +55,13 @@ public class EventActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), eventItem.getName(), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), ShowEvents.class);
                 intent.putExtra("name", eventItem.getName());
-                intent.putExtra("age", eventItem.getAge());
+                intent.putExtra("age", eventItem.getDescr());
                 intent.putExtra("photo", eventItem.getPhotoId());
                 intent.putExtra("start", eventItem.getStart());
                 intent.putExtra("end", eventItem.getEnd());
                 startActivity(intent);
             }
         }));
-
-        initializeData();
     }
 
     private void initializeData() {
@@ -75,29 +76,19 @@ public class EventActivity extends AppCompatActivity {
                         final Event event = new Event();
                         ParseObject o = list.get(i);
                         event.setName(o.getString("title"));
-                        event.setAge(o.getString("description"));
+                        event.setDescr(o.getString("description"));
                         ParseFile image = o.getParseFile("logo");
                         event.setStart(o.getString("start"));
                         event.setEnd(o.getString("end"));
-                        image.getDataInBackground(new GetDataCallback() {
-                            @Override
-                            public void done(byte[] bytes, ParseException e) {
-                                if (e == null) {
-                                    bmp = BitmapFactory.decodeByteArray(bytes, 0,
-                                            bytes.length);
-                                    event.setPhotoId(bmp);
-                                    Log.e("parse file ok", " null");
-                                } else {
-                                    Log.e("paser after downloade", " null");
-                                }
-                            }
-                        });
-                        //event.setPhotoid(R.drawable.calendar53);
-                        Log.d("EVENTS", event.getName() + event.getAge());
+                        try {
+                            bmp = BitmapFactory.decodeByteArray(image.getData(),0,image.getData().length);
+                            event.setPhotoId(bmp);
+                        } catch (ParseException e1) {
+                            e1.printStackTrace();
+                        }
                         events.add(event);
                     }
-                    RVAdapter adapter = new RVAdapter(events);
-                    rv.setAdapter(adapter);
+                    ((EventAdapter)mAdapter).setEvents(events);
                 } else {
                     Toast.makeText(EventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }

@@ -2,7 +2,7 @@ package com.alisher.android.stayalive;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Handler;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -12,27 +12,31 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alisher.android.stayalive.bar.SimpleScannerActivity;
 import com.parse.FindCallback;
-import com.parse.Parse;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TargetActivity extends MainActivity {
+    private static final String TAG = "TARGET_ACTIVITY";
     ParseUser currentUser= ParseUser.getCurrentUser();
     private TextView nameTV,groupTV,genderTV;
     private EditText codeToKill;
     private String targetUsername,targetGroup,targetGender;
-    public String targetObjectId,currentUserGameId;
+    public String targetObjectId;
     private ImageView imageIV;
 
-    String name, pass, targetId;
-    ParseObject myCurrentUser;
-    private String newTarget;
-    private String curUserID;
+    private ParseQuery<ParseObject> parseObjectParseQuery, parseObjectParseQuerySecond, parseStayAliveAchievement;
+    private String usersCurId;
+    private int killingsToAdd;
+    public String targetsHunterId, curUserId;
+    private int totalPlayerNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,16 +72,16 @@ public class TargetActivity extends MainActivity {
         ParseQuery<ParseObject> queryUser=ParseQuery.getQuery("StayAliveUsers");
         queryUser.whereEqualTo("user_id", currentUser.getObjectId());
         ParseQuery<ParseObject> queryTarget = ParseQuery.getQuery("StayAliveUsers");
-        queryTarget.whereMatchesKeyInQuery("pointer", "objectId", queryUser);
+        queryTarget.whereMatchesKeyInQuery("hunter_id", "objectId", queryUser);
         queryTarget.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> list, ParseException e) {
                 if (e == null) {
                     for (ParseObject o : list) {
-                        targetUsername = o.getString("username");
+                        targetUsername = o.getString("user_id");
                         targetGroup = o.getString("group");
-                        targetGender =o.getString("gender");
-                        targetObjectId=o.getObjectId();
+                        targetGender = o.getString("gender");
+                        targetObjectId = o.getObjectId();
                     }
 
                     nameTV.setText(targetUsername);
@@ -85,7 +89,6 @@ public class TargetActivity extends MainActivity {
                     genderTV.setText(targetGender);
                 } else
                     Log.d("exeptionName", e.getMessage());
-
             }
         });
     }
@@ -95,68 +98,140 @@ public class TargetActivity extends MainActivity {
     }
 
     public void buttonKilledClicked(View v){
-        if(codeToKill.getText().toString().equals(targetObjectId)){
-            initNewTarget();
-            Toast.makeText(this, "Congargulation, You have new Target!", Toast.LENGTH_SHORT).show();
-        }else{
-            Toast.makeText(this, "Wrong code from Target's app!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(TargetActivity.this, SimpleScannerActivity.class);
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            String value = data.getStringExtra("qrCode");
+            Log.d(TAG, "" + value);
+            initNewTarget("MCXBn4eSxU");
+//            if(value == null){
+//                Toast.makeText(TargetActivity.this, "Увы вы никого не убили", Toast.LENGTH_SHORT).show();
+//            } else {
+//                initNewTarget(value);
+//            }
+        } else {
+            Log.d("HELLO", "HELLO");
         }
     }
 
-    private void initNewTarget(){
-        ParseQuery<ParseObject> parseUserParseQuery = new ParseQuery<ParseObject>("StayAliveUsers");
-        parseUserParseQuery.whereEqualTo("user_id",currentUser.getObjectId());
-        parseUserParseQuery.findInBackground(new FindCallback<ParseObject>() {
+    private void initNewTarget(final String idToKill){
+        parseObjectParseQuery = ParseQuery.getQuery("StayAliveUsers");
+        parseObjectParseQuerySecond = ParseQuery.getQuery("StayAliveUsers");
+        parseStayAliveAchievement = ParseQuery.getQuery("UserAchievements");
+        try {
+            usersCurId = ParseUser.getCurrentUser().getObjectId().trim();
+            totalPlayerNumber = ParseUser.getQuery().count();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(TargetActivity.this, "ID: " + idToKill, Toast.LENGTH_LONG).show();
+        parseObjectParseQuery.whereEqualTo("user_id", idToKill);
+        parseObjectParseQuery.findInBackground(new FindCallback<ParseObject>() {
+            public ParseQuery parseObjectParseQueryThird = ParseQuery.getQuery("StayAliveUsers");
             @Override
-            public void done(List<ParseObject> list, ParseException e) {
-                if (e == null) {
-                    for (ParseObject myParseObj : list) {
-                        myCurrentUser = myParseObj;
-                        curUserID = myCurrentUser.getObjectId();
-                        //Toast.makeText(Registration.this, "Current user ID:" + myCurrentUser.getObjectId(), Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
-        });
-        final ParseQuery<ParseObject> userStayAlive = new ParseQuery<ParseObject>("StayAliveUsers");
-        final ParseQuery<ParseObject> parseNewTargetQuery = new ParseQuery<ParseObject>("StayAliveUsers");
-        Log.d("TARGERID,", targetObjectId);
-        userStayAlive.whereEqualTo("objectId", targetObjectId);
-        userStayAlive.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> list, ParseException e) {
-                if (e == null) {
-                    for (ParseObject parseObject : list) {
-                        parseObject.put("isDead", true);
-                        parseObject.saveInBackground();
-                    }
-                    //Toast.makeText(Registration.this, "Target is Dead", Toast.LENGTH_SHORT).show();
-                            /*ParseQuery<ParseObject> newParseQuery = new ParseQuery<ParseObject>("StayAliveUsers");
-                            newParseQuery.whereEqualTo("objectId",targetId);
-                            parseNewTargetQuery.whereMatchesKeyInQuery("hunter_id","objectId", newParseQuery);*/
-                    parseNewTargetQuery.whereEqualTo("pointer", targetId);
-                    parseNewTargetQuery.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> list, ParseException exp) {
+                if (exp == null) {
+                    final ParseObject parseObject = list.get(0);
+                    targetsHunterId = parseObject.get("hunter_id").toString().trim();
+                    Toast.makeText(TargetActivity.this, "targetsHunterId:" + targetsHunterId, Toast.LENGTH_SHORT).show();
+                    parseObjectParseQuerySecond.whereEqualTo("user_id", usersCurId);
+                    parseObjectParseQuerySecond.findInBackground(new FindCallback<ParseObject>() {
                         @Override
                         public void done(List<ParseObject> list, ParseException e) {
                             if (e == null) {
-                                for (ParseObject parseObject : list) {
-                                    //Toast.makeText(Registration.this, "My Current User:" + curUserID, Toast.LENGTH_SHORT).show();
-                                    //parseObject.remove("hunter_id");
-                                    //parseObject.put("hunter_id", ParseObject.createWithoutData("StayAliveUsers", curUserID));
-                                    parseObject.put("pointer", curUserID);
-                                    parseObject.saveInBackground();
+                                for (ParseObject myObj : list) {
+                                    curUserId = myObj.getObjectId();
                                 }
-                                Toast.makeText(TargetActivity.this, "new Target is Set", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(TargetActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(TargetActivity.this, "curUserID:" + curUserId + " | " + targetsHunterId + " | " + usersCurId, Toast.LENGTH_LONG).show();
+                                if (targetsHunterId.equals(curUserId)) {
+                                    Toast.makeText(TargetActivity.this, "Right person to slay", Toast.LENGTH_SHORT).show();
+                                    killingsToAdd = 0;
+                                    parseStayAliveAchievement.whereEqualTo("user_id", parseObject.get("user_id").toString().trim());
+                                    parseStayAliveAchievement.findInBackground(new FindCallback<ParseObject>() {
+                                        @Override
+                                        public void done(List<ParseObject> list, ParseException e) {
+                                            if (e == null) {
+                                                for (ParseObject myParse : list) {
+                                                    killingsToAdd = myParse.getNumber("killings").intValue();
+                                                    myParse.put("isDead", true);
+                                                    myParse.saveInBackground();
+                                                }
+                                            } else {
+                                            }
+                                        }
+                                    });
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            parseStayAliveAchievement.whereEqualTo("user_id", usersCurId);
+                                            /*myColection.add(usersCurId);*/
+                                            parseStayAliveAchievement.findInBackground(new FindCallback<ParseObject>() {
+                                                @Override
+                                                public void done(List<ParseObject> list, ParseException e) {
+                                                    if (e == null) {
+                                                        for (ParseObject myParse : list) {
+                                                            int toAdd = killingsToAdd + 1 + myParse.getNumber("killings").intValue();
+                                                            int moneyToAdd = myParse.getNumber("money").intValue() + 50;
+                                                            myParse.put("killings", toAdd);
+                                                            myParse.put("money", moneyToAdd);
+                                                            myParse.saveInBackground();
+                                                        }
+                                                        Toast.makeText(TargetActivity.this, "1111", Toast.LENGTH_SHORT).show();
+                                                    } else {
+                                                        Toast.makeText(TargetActivity.this, e.getMessage() + " 1111", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }, 2000);
+                                    parseObjectParseQueryThird.whereEqualTo("hunter_id", idToKill);
+                                    parseObjectParseQueryThird.findInBackground(new FindCallback<ParseObject>() {
+                                        @Override
+                                        public void done(List<ParseObject> list, ParseException e) {
+                                            if (e == null) {
+                                                for (ParseObject myParse : list) {
+                                                    myParse.put("hunter_id", curUserId);
+                                                    myParse.saveInBackground();
+                                                }
+                                            } else {
+                                                Toast.makeText(TargetActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                    ParseQuery<ParseObject> parseObjectParseQueryFourth = ParseQuery.getQuery("StayAliveUsers");
+                                    parseObjectParseQueryFourth.findInBackground(new FindCallback<ParseObject>() {
+                                        @Override
+                                        public void done(List<ParseObject> list, ParseException e) {
+                                            if (e == null) {
+                                                int tempCounter = 1;
+                                                for (ParseObject myParse : list) {
+                                                    if (myParse.getObjectId().equals(idToKill)) {
+                                                        myParse.deleteEventually();
+                                                    } else {
+                                                        myParse.put("counter", tempCounter);
+                                                        tempCounter++;
+                                                        myParse.saveEventually();
+                                                    }
+                                                }
+                                                Toast.makeText(TargetActivity.this, "New P_counters are SET", Toast.LENGTH_SHORT).show();
+                                            } else {
+
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         }
                     });
                 } else {
-                    Toast.makeText(TargetActivity.this, "Target is NOT Dead", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TargetActivity.this, exp.getMessage() + " 2", Toast.LENGTH_SHORT).show();
                 }
             }
         });
-
     }
 }

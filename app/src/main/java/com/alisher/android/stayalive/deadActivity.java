@@ -1,18 +1,21 @@
 package com.alisher.android.stayalive;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.parse.FindCallback;
+import com.parse.GetDataCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -20,9 +23,10 @@ import com.parse.ParseUser;
 import java.util.List;
 
 public class DeadActivity extends AppCompatActivity {
-    private TextView codeToKillTV;
-    private ParseUser currentUser = ParseUser.getCurrentUser();
-    private String currentUserGameId;
+    private final static String TAG = "DEAD_ACTIVITY";
+
+    private Bitmap photo;
+    private ImageView qrImg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,32 +35,14 @@ public class DeadActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        codeToKillTV=(TextView)findViewById(R.id.objectIdText);
-        getCurrentGameUserId();
-    }
 
-    private void getCurrentGameUserId(){
-        ParseQuery<ParseObject> queryUser=ParseQuery.getQuery("StayAliveUsers");
-        queryUser.whereEqualTo("user_id", currentUser.getObjectId());
-        queryUser.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> list, ParseException e) {
-                if (e == null) {
-                    for (ParseObject p : list) {
-                        Log.d("CURRENT USER GAME ID", p.getObjectId());
-                        currentUserGameId = p.getObjectId();
-                    }
-                    codeToKillTV.setText(currentUserGameId);
-                } else {
-
-                }
-            }
-        });
+        qrImg = (ImageView) findViewById(R.id.qr_image);
+        getQrImage();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 startActivity(new Intent(DeadActivity.this, MainActivity.class));
                 break;
@@ -66,6 +52,30 @@ public class DeadActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-       startActivity(new Intent(DeadActivity.this, MainActivity.class));
+        startActivity(new Intent(DeadActivity.this, MainActivity.class));
+    }
+
+    private void getQrImage() {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("UserAchievements");
+        query.whereEqualTo("user_id", ParseUser.getCurrentUser().getObjectId());
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                if (e == null) {
+                    for (ParseObject p : list) {
+                        ParseFile file = p.getParseFile("qrCode");
+                        file.getDataInBackground(new GetDataCallback() {
+                            @Override
+                            public void done(byte[] bytes, ParseException e) {
+                                photo = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                qrImg.setImageBitmap(photo);
+                            }
+                        });
+                    }
+                } else {
+                    Log.e("DEAD_ACTIVITY", e.getMessage());
+                }
+            }
+        });
     }
 }
