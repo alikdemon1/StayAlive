@@ -2,9 +2,6 @@ package com.alisher.android.stayalive.news;
 
 import android.graphics.Bitmap;
 
-/**
- * Created by Exoguru on 23/01/2015.
- */
 public class NewsItem {
     private String mName;
     private String mDes;

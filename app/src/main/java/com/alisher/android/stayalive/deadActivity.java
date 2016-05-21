@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.GetDataCallback;
@@ -27,6 +28,7 @@ public class DeadActivity extends AppCompatActivity {
 
     private Bitmap photo;
     private ImageView qrImg;
+    private boolean flag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,10 @@ public class DeadActivity extends AppCompatActivity {
             @Override
             public void done(List<ParseObject> list, ParseException e) {
                 if (e == null) {
+                    Log.d("PROVERKA", list.size()+"");
+                    if (list.isEmpty()){
+                        Toast.makeText(DeadActivity.this, "Event not started", Toast.LENGTH_SHORT).show();
+                    }
                     for (ParseObject p : list) {
                         ParseFile file = p.getParseFile("qrCode");
                         file.getDataInBackground(new GetDataCallback() {

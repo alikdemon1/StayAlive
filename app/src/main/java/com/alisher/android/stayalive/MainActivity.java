@@ -1,11 +1,17 @@
 package com.alisher.android.stayalive;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
@@ -21,6 +27,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -154,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                                 Toast.makeText(MainActivity.this, "Configuration", Toast.LENGTH_SHORT).show();
                                 break;
                             case 5:
-                                Toast.makeText(MainActivity.this, "I was killed", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(MainActivity.this, "I was killed", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(getApplicationContext(), DeadActivity.class));
                                 break;
                             case 6:
@@ -205,26 +213,31 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                     @Override
                     public boolean onProfileChanged(View view, IProfile profile, boolean current) {
                         Drawable d = new BitmapDrawable(getResources(), photo);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("Выберите картинку")
-                                .setIcon(d)
-                                .setPositiveButton("Из камеры",
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                Toast.makeText(MainActivity.this, "YES", Toast.LENGTH_SHORT).show();
-                                                Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                                startActivityForResult(camera, 188);
-                                            }
-                                        })
-                                .setNegativeButton("Отмена",
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                Toast.makeText(MainActivity.this, "NO", Toast.LENGTH_SHORT).show();
-                                                dialog.cancel();
-                                            }
-                                        });
-                        AlertDialog alert = builder.create();
-                        alert.show();
+                        final Dialog dialog = new Dialog(MainActivity.this);
+                        dialog.setContentView(R.layout.image_dialog);
+                        dialog.setTitle("Choose image...");
+                        ImageView image = (ImageView) dialog.findViewById(R.id.image);
+                        Button cancel = (Button) dialog.findViewById(R.id.cancel);
+                        Button camera = (Button) dialog.findViewById(R.id.camera);
+
+                        image.setImageDrawable(d);
+                        cancel.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                        camera.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                startActivityForResult(camera, 188);
+                            }
+                        });
+
+                        dialog.show();
+
                         return false;
                     }
                 })
@@ -307,18 +320,50 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 }
             }
         });
+    }
 
+    public static Bitmap getCircularBitmap(Bitmap bitmap) {
+        Bitmap output;
+
+        if (bitmap.getWidth() > bitmap.getHeight()) {
+            output = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        } else {
+            output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getWidth(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        float r = 0;
+
+        if (bitmap.getWidth() > bitmap.getHeight()) {
+            r = bitmap.getHeight() / 2;
+        } else {
+            r = bitmap.getWidth() / 2;
+        }
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawCircle(r, r, r, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 188 && resultCode == RESULT_OK) {
             photo = (Bitmap) data.getExtras().get("data");
-            profile.withIcon(photo);
+            Bitmap b = getCircularBitmap(photo);
+            profile.withIcon(b);
             accountHeader.addProfiles(profile);
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            photo.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            b.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] imageForUpload = stream.toByteArray();
             ParseFile file = new ParseFile("default.png", imageForUpload);
             file.saveInBackground();

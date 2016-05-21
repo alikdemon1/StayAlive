@@ -60,19 +60,41 @@ public class HunterActivity extends AppCompatActivity {
     }
 
     private void getHunter(){
-        ParseQuery<ParseObject> queryUser=ParseQuery.getQuery("StayAliveUsers");
+        final ParseQuery<ParseUser> queryUsername = ParseUser.getQuery();
+        ParseQuery<ParseObject> queryUser = ParseQuery.getQuery("StayAliveUsers");
         queryUser.whereEqualTo("user_id", currentUser.getObjectId());
+        final ParseQuery<ParseObject> queryTarget = ParseQuery.getQuery("StayAliveUsers");
         queryUser.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> list, ParseException e) {
-                if (e ==null){
-                    for (int i = 0; i < list.size(); i++) {
-                        ParseObject p = list.get(i);
-                        hunterGroup = p.getString("group");
-                        hunterGender = p.getString("gender");
+                if (e == null){
+                    for (ParseObject p : list) {
+                        String idOfHunter = p.getString("hunter_id");
+                        queryTarget.whereEqualTo("objectId", idOfHunter);
+                        queryTarget.findInBackground(new FindCallback<ParseObject>() {
+                            @Override
+                            public void done(List<ParseObject> list, ParseException e) {
+                                if (e == null){
+                                    for (ParseObject p : list) {
+                                        try {
+                                            hunterGender = queryUsername.whereEqualTo("objectId", p.getString("user_id")).getFirst().getString("gender");
+                                            hunterGroup = queryUsername.whereEqualTo("objectId", p.getString("user_id")).getFirst().getString("group");
+//                                            Log.d("hunterGender", hunterGender);
+//                                            Log.d("hunterGroup", hunterGroup);
+                                            //hunterPhoto = queryUsername.whereEqualTo("objectId", p.getString("user_id")).getFirst().getString("group");
+                                        } catch (ParseException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+
+                                } else {
+
+                                }
+                            }
+                        });
                     }
                 } else {
-                    Log.e("error", e.getMessage());
+
                 }
             }
         });

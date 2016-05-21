@@ -56,14 +56,16 @@ public class RegisterActivity extends AppCompatActivity {
                 user.setUsername(name.getText().toString());
                 user.setEmail(email.getText().toString());
                 user.setPassword(password.getText().toString());
-                user.put("group", group.getText().toString());
-                user.put("gender", gender.getText().toString());
                 user.put("icon", R.drawable.user_icon);
 
                 user.signUpInBackground(new SignUpCallback() {
                     @Override
                     public void done(ParseException e) {
-                        if (e != null) {
+                        if (e == null) {
+                            progressDialog.dismiss();
+                            Toast.makeText(RegisterActivity.this, "User Saved",Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                        } else {
                             progressDialog.dismiss();
                             Toast.makeText(RegisterActivity.this, "Saving user failed.", Toast.LENGTH_SHORT).show();
                             Log.w("", "Error : " + e.getMessage() + ":::" + e.getCode());
@@ -73,10 +75,6 @@ public class RegisterActivity extends AppCompatActivity {
                                 password.setText("");
                                 email.setText("");
                             }
-                        } else {
-                            progressDialog.dismiss();
-                            Toast.makeText(RegisterActivity.this, "User Saved",Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                         }
                     }
                 });

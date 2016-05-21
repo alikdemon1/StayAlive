@@ -39,7 +39,6 @@ public class ShowEvents extends AppCompatActivity {
     private static final int BLACK = Color.BLACK;
     private static final int WHITE = Color.WHITE;
 
-    private boolean flag = false;
     private TextView name;
     private TextView age;
     private ImageView photo;
@@ -94,12 +93,12 @@ public class ShowEvents extends AppCompatActivity {
                 checkQuery.findInBackground(new FindCallback<ParseObject>() {
                     @Override
                     public void done(List<ParseObject> list, ParseException e) {
-                        if (e == null){
-                            Log.d("size", list.size()+"");
-                            if (list.size() == 0){
+                        if (e == null) {
+                            Log.d("size", list.size() + "");
+                            if (list.size() == 0) {
                                 addUserToEvent();
                                 Toast.makeText(ShowEvents.this, "Спасибо, Вы зарегистрировались в этом мероприятие", Toast.LENGTH_SHORT).show();
-                            }  else {
+                            } else {
                                 Toast.makeText(ShowEvents.this, "Извените, но вы уже подтвердили участие", Toast.LENGTH_SHORT).show();
                             }
                         } else {
@@ -161,6 +160,8 @@ public class ShowEvents extends AppCompatActivity {
         final byte[] byteArray = byteArrayOutputStream.toByteArray();
         final ParseFile file = new ParseFile("qr.png", byteArray);
 
+
+        final ParseQuery<ParseObject> object = ParseQuery.getQuery("StayAliveUsers");
         ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
         userQuery.whereEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
         userQuery.findInBackground(new FindCallback<ParseUser>() {
@@ -170,21 +171,43 @@ public class ShowEvents extends AppCompatActivity {
                     for (ParseUser objUser : list) {
                         ParseObject stayAliveObj = new ParseObject("StayAliveUsers");
                         ParseObject SAAvhievement = new ParseObject("UserAchievements");
-                        stayAliveObj.put("user_id", objUser.getObjectId());
-                        stayAliveObj.put("counter", objUser.get("p_counter"));
-                        SAAvhievement.put("user_id", objUser.getObjectId());
-                        SAAvhievement.put("p_counter", objUser.get("p_counter"));
-                        SAAvhievement.put("username", objUser.get("username"));
-                        SAAvhievement.put("isDead", false);
-                        SAAvhievement.put("killings", 0);
-                        SAAvhievement.put("money", 100);
-                        SAAvhievement.put("qrCode", file);
-                        stayAliveObj.saveEventually();
-                        SAAvhievement.saveInBackground();
+                        try {
+                            stayAliveObj.put("user_id", objUser.getObjectId());
+                            stayAliveObj.put("counter", object.count() + 1);
+                            SAAvhievement.put("user_id", objUser.getObjectId());
+                            SAAvhievement.put("p_counter", object.count() + 1);
+                            SAAvhievement.put("username", objUser.get("username"));
+                            SAAvhievement.put("isDead", false);
+                            SAAvhievement.put("killings", 0);
+                            SAAvhievement.put("money", 100);
+                            SAAvhievement.put("qrCode", file);
+                            stayAliveObj.saveEventually();
+                            SAAvhievement.saveInBackground();
+                        } catch (ParseException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                     Toast.makeText(ShowEvents.this, "User info transferred", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(ShowEvents.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void isReady() {
+        ParseQuery<ParseObject> isReadyQuery = ParseQuery.getQuery("StayAliveUsers");
+        isReadyQuery.whereEqualTo("user_id", ParseUser.getCurrentUser().getObjectId());
+        isReadyQuery.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                if (e == null) {
+                    for (ParseObject p : list) {
+                        p.put("isReady", true);
+                        p.saveInBackground();
+                    }
+                } else {
+                    Log.e("ShowEvents_TAG", e.getMessage());
                 }
             }
         });
